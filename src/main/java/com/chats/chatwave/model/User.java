@@ -40,9 +40,11 @@ public class User implements UserDetails {
     private String phonenumber;
 
     @Builder.Default
-    private Boolean enabled = false;
+    private Boolean enabled = true;
 
     private String bio;
+
+    private String image;
 
     private String password;
 

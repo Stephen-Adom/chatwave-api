@@ -3,12 +3,13 @@ package com.chats.chatwave.configurations;
 import java.util.Optional;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,7 +22,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.chats.chatwave.repository.UserRepository;
 
-public class SecurityConfiguration extends WebSecurityConfiguration {
+@Configuration
+@EnableWebSecurity
+public class SecurityConfiguration {
 
     private final UserRepository userRepository;
 
@@ -61,7 +64,7 @@ public class SecurityConfiguration extends WebSecurityConfiguration {
     }
 
     @Bean
-    private PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 

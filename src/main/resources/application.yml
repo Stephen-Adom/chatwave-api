@@ -12,3 +12,6 @@ spring:
     username: root
     password: i@mthebest
     driver-class-name: com.mysql.jdbc.Driver
+
+jwt:
+  secret: 64966c70e65ba271f06b22dfa73e50ea240267b7b5de39f500c9a05754a2f8e4278f6a238795796c43e1c588181472dd8932bacf56cfe547d209112c6aa65621

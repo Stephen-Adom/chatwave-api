@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -27,9 +28,11 @@ import com.chats.chatwave.repository.UserRepository;
 public class SecurityConfiguration {
 
     private final UserRepository userRepository;
+    private JwtSecurityFilter jwtSecurityFilter;
 
-    public SecurityConfiguration(UserRepository userRepository) {
+    public SecurityConfiguration(UserRepository userRepository, JwtSecurityFilter jwtSecurityFilter) {
         this.userRepository = userRepository;
+        this.jwtSecurityFilter = jwtSecurityFilter;
     }
 
     @Bean
@@ -76,6 +79,8 @@ public class SecurityConfiguration {
         // httpRequest.requestMatchers("/api/auth/**").permitAll());
         http.sessionManagement(
                 sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.authenticationProvider(authenticationProvider()).addFilterBefore(jwtSecurityFilter,
+                UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

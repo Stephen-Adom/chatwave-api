@@ -1,6 +1,6 @@
 package com.chats.chatwave.model.RequestModel;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,21 +10,21 @@ import lombok.Setter;
 @Data
 public class UserRequestModel {
 
-    @NotNull(message = "First name is required")
+    @NotEmpty(message = "First name is required")
     private String firstname;
 
-    @NotNull(message = "Last name is required")
+    @NotEmpty(message = "Last name is required")
     private String lastname;
 
-    @NotNull(message = "Username is required")
+    @NotEmpty(message = "Username is required")
     private String username;
 
-    @NotNull(message = "Email is required")
+    @NotEmpty(message = "Email is required")
     private String email;
 
-    @NotNull(message = "Phonenumber is required")
+    @NotEmpty(message = "Phonenumber is required")
     private String phonenumber;
 
-    @NotNull(message = "Password is required")
+    @NotEmpty(message = "Password is required")
     private String password;
 }

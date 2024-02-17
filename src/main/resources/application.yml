@@ -1,0 +1,14 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: chatwave-api
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/chatwave
+    username: root
+    password: i@mthebest
+    driver-class-name: com.mysql.jdbc.Driver

@@ -72,7 +72,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.disable());
         http.csrf(csrf -> csrf.disable());
-        http.authorizeHttpRequests(httpRequest -> httpRequest.requestMatchers("/api/auth/**").permitAll());
+        // http.authorizeHttpRequests(httpRequest ->
+        // httpRequest.requestMatchers("/api/auth/**").permitAll());
         http.sessionManagement(
                 sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
@@ -88,7 +89,8 @@ public class SecurityConfiguration {
                 registry.addMapping("/api/**")
                         .allowedOrigins("http://localhost:4200")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
-                        .allowedHeaders("Content-Type", "Authorization")
+                        // .allowedHeaders("Content-Type", "Authorization")
+                        .allowedHeaders("*")
                         .allowCredentials(true)
                         .maxAge(3600);
             }

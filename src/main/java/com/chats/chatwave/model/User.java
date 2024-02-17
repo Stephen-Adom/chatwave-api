@@ -39,8 +39,7 @@ public class User implements UserDetails {
     @Column(name = "phonenumber", nullable = false, unique = true)
     private String phonenumber;
 
-    @Builder.Default
-    private Boolean enabled = true;
+    private Boolean enabled;
 
     private String bio;
 

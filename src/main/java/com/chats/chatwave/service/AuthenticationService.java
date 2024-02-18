@@ -123,8 +123,6 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
         String token = jwtService.generateToken(authUser);
 
-        System.out.println(token);
-
         saveToken(token, authUser);
 
         AuthenticateResponse response = AuthenticateResponse.builder().data(buildAuthUserDto(authUser))

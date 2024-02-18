@@ -12,6 +12,8 @@ spring:
     username: root
     password: i@mthebest
     driver-class-name: com.mysql.jdbc.Driver
+  main:
+    allow-circular-references: true
 
 jwt:
   secret: a21f407e9f09759fff57e81859803370c4f7b7613d36c518a8ddaef0e23236a292295574cfa9535fae9e74515bfa8a18b541059ca7b3297e6530fef44cd55927

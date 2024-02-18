@@ -4,14 +4,14 @@ import org.springframework.validation.BindingResult;
 
 import com.chats.chatwave.Exception.EntityNotFoundException;
 import com.chats.chatwave.Exception.ValidationErrorsException;
-import com.chats.chatwave.model.User;
-import com.chats.chatwave.model.RequestModel.UserLoginModel;
+import com.chats.chatwave.model.RequestModel.AuthenticateRequest;
 import com.chats.chatwave.model.RequestModel.UserRequestModel;
+import com.chats.chatwave.model.ResponseModel.AuthenticateResponse;
 
 public interface AuthenticationServiceInterface {
-    public User userRegistration(UserRequestModel requestBody, BindingResult bindingResult)
-            throws ValidationErrorsException, EntityNotFoundException;
+        public AuthenticateResponse userRegistration(UserRequestModel requestBody, BindingResult bindingResult)
+                        throws ValidationErrorsException, EntityNotFoundException;
 
-    public User authenticateUser(UserLoginModel requestBody, BindingResult bindingResult)
-            throws ValidationErrorsException, EntityNotFoundException;
+        public AuthenticateResponse authenticateUser(AuthenticateRequest requestBody, BindingResult bindingResult)
+                        throws ValidationErrorsException, EntityNotFoundException;
 }

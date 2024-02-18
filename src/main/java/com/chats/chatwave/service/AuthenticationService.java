@@ -1,6 +1,9 @@
 package com.chats.chatwave.service;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,9 +16,14 @@ import org.springframework.validation.BindingResult;
 
 import com.chats.chatwave.Exception.EntityNotFoundException;
 import com.chats.chatwave.Exception.ValidationErrorsException;
+import com.chats.chatwave.model.Token;
+import com.chats.chatwave.model.TokenType;
 import com.chats.chatwave.model.User;
-import com.chats.chatwave.model.RequestModel.UserLoginModel;
+import com.chats.chatwave.model.Dto.AuthUserDto;
+import com.chats.chatwave.model.RequestModel.AuthenticateRequest;
 import com.chats.chatwave.model.RequestModel.UserRequestModel;
+import com.chats.chatwave.model.ResponseModel.AuthenticateResponse;
+import com.chats.chatwave.repository.TokenRepository;
 import com.chats.chatwave.repository.UserRepository;
 import com.chats.chatwave.service.serviceInterface.AuthenticationServiceInterface;
 
@@ -28,16 +36,22 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
     private final AuthenticationManager authenticationManager;
 
+    private final TokenRepository tokenRepository;
+
+    private final JwtService jwtService;
+
     public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-            AuthenticationManager authenticationManager) {
+            AuthenticationManager authenticationManager, TokenRepository tokenRepository, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.tokenRepository = tokenRepository;
+        this.jwtService = jwtService;
     }
 
     @SuppressWarnings("null")
     @Override
-    public User userRegistration(UserRequestModel requestBody, BindingResult bindingResult)
+    public AuthenticateResponse userRegistration(UserRequestModel requestBody, BindingResult bindingResult)
             throws ValidationErrorsException, EntityNotFoundException {
         if (bindingResult.hasErrors()) {
             throw new ValidationErrorsException(bindingResult.getFieldErrors(),
@@ -74,11 +88,21 @@ public class AuthenticationService implements AuthenticationServiceInterface {
                 .phonenumber(requestBody.getPhonenumber()).password(passwordEncoder.encode(requestBody.getPassword()))
                 .build();
 
-        return this.userRepository.save(newUser);
+        User savedUser = this.userRepository.save(newUser);
+
+        String token = jwtService.generateToken(savedUser);
+
+        saveToken(token, savedUser);
+
+        var response = AuthenticateResponse.builder().data(buildAuthUserDto(savedUser)).accessToken(token)
+                .refreshToken("")
+                .status(HttpStatus.CREATED).build();
+
+        return response;
     }
 
     @Override
-    public User authenticateUser(UserLoginModel requestBody, BindingResult bindingResult)
+    public AuthenticateResponse authenticateUser(AuthenticateRequest requestBody, BindingResult bindingResult)
             throws ValidationErrorsException, EntityNotFoundException {
         if (bindingResult.hasErrors()) {
             throw new ValidationErrorsException(bindingResult.getFieldErrors(),
@@ -95,6 +119,48 @@ public class AuthenticationService implements AuthenticationServiceInterface {
                     HttpStatus.UNAUTHORIZED);
         }
 
-        return (User) this.userRepository.findByUsername(requestBody.getUsername()).get();
+        User authUser = (User) this.userRepository.findByUsername(requestBody.getUsername()).get();
+
+        String token = jwtService.generateToken(authUser);
+
+        System.out.println(token);
+
+        saveToken(token, authUser);
+
+        AuthenticateResponse response = AuthenticateResponse.builder().data(buildAuthUserDto(authUser))
+                .accessToken(token)
+                .refreshToken("")
+                .status(HttpStatus.OK).build();
+
+        return response;
+    }
+
+    @SuppressWarnings("null")
+    private void saveToken(String token, User user) {
+        this.revokeUserTokens(user);
+
+        String jwtPayload = token.split("\\.")[1];
+
+        Token tokenObj = Token.builder().user(user).token(jwtPayload).tokenType(TokenType.BEARER).revoked(false)
+                .expired(false).build();
+
+        this.tokenRepository.save(tokenObj);
+    }
+
+    private void revokeUserTokens(User user) {
+        List<Token> userTokens = this.tokenRepository.findAllByUserId(user.getId());
+        userTokens.stream().forEach(token -> {
+            token.setExpired(true);
+            token.setRevoked(true);
+        });
+
+        this.tokenRepository.saveAll(userTokens);
+
+    }
+
+    private AuthUserDto buildAuthUserDto(User user) {
+        return AuthUserDto.builder().id(user.getId()).firstname(user.getFirstname()).lastname(user.getLastname())
+                .username(user.getUsername()).email(user.getEmail()).phonenumber(user.getPhonenumber())
+                .bio(user.getBio()).enabled(user.getEnabled()).image(user.getImage()).build();
     }
 }

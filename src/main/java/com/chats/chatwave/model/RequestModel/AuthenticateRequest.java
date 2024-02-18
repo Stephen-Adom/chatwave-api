@@ -8,7 +8,7 @@ import lombok.Setter;
 @Data
 @Setter
 @Getter
-public class UserLoginModel {
+public class AuthenticateRequest {
 
     @NotEmpty(message = "Username is required")
     private String username;

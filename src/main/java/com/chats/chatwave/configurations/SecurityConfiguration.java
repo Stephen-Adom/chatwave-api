@@ -82,11 +82,12 @@ public class SecurityConfiguration {
         http.cors(cors -> cors.disable());
         http.csrf(csrf -> csrf.disable());
         http.authorizeHttpRequests(
-                httpRequest -> httpRequest.requestMatchers("/api/auth/**").permitAll().anyRequest().authenticated());
+                httpRequest -> httpRequest.requestMatchers("/api/auth/**").permitAll());
         http.sessionManagement(
                 sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.authenticationProvider(authenticationProvider()).addFilterBefore(jwtSecurityFilter,
-                UsernamePasswordAuthenticationFilter.class);
+        // http.authenticationProvider(authenticationProvider()).addFilterAfter(jwtSecurityFilter,
+        // UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(jwtSecurityFilter, UsernamePasswordAuthenticationFilter.class);
         http.logout(logout -> logout.logoutUrl("/api/auth/logout").addLogoutHandler(logoutService)
                 .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()));
         return http.build();
@@ -102,8 +103,7 @@ public class SecurityConfiguration {
                 registry.addMapping("/api/**")
                         .allowedOrigins("http://localhost:4200")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
-                        // .allowedHeaders("Content-Type", "Authorization")
-                        .allowedHeaders("*")
+                        .allowedHeaders("Content-Type", "Authorization")
                         .allowCredentials(true)
                         .maxAge(3600);
             }

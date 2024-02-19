@@ -1,5 +1,7 @@
 package com.chats.chatwave.controller;
 
+import java.io.IOException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -14,7 +16,11 @@ import com.chats.chatwave.model.RequestModel.AuthenticateRequest;
 import com.chats.chatwave.model.RequestModel.UserRequestModel;
 import com.chats.chatwave.model.ResponseModel.AuthenticateResponse;
 import com.chats.chatwave.service.AuthenticationService;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 @RestController
@@ -45,4 +51,9 @@ public class AuthController {
         return new ResponseEntity<AuthenticateResponse>(response, HttpStatus.CREATED);
     }
 
+    @PostMapping("refresh-token")
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response)
+            throws StreamWriteException, DatabindException, EntityNotFoundException, IOException {
+        this.authenticationService.refreshToken(request, response);
+    }
 }

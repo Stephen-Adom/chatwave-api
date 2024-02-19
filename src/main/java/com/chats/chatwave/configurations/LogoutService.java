@@ -26,11 +26,14 @@ public class LogoutService implements LogoutHandler {
         String authHeader = request.getHeader("Authorization");
         String token = null;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.setHeader("error", "Token not available");
+            response.setStatus(401);
             return;
         }
 
         token = authHeader.substring(7);
-        Optional<Token> storedToken = this.tokenRepository.findByToken(token);
+        String tokenPayload = token.split("\\.")[1];
+        Optional<Token> storedToken = this.tokenRepository.findByToken(tokenPayload);
 
         if (storedToken.isPresent()) {
             Token tokenExist = storedToken.get();

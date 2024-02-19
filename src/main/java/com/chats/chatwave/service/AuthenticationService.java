@@ -1,14 +1,18 @@
 package com.chats.chatwave.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
@@ -24,6 +28,14 @@ import com.chats.chatwave.model.ResponseModel.AuthenticateResponse;
 import com.chats.chatwave.repository.TokenRepository;
 import com.chats.chatwave.repository.UserRepository;
 import com.chats.chatwave.service.serviceInterface.AuthenticationServiceInterface;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.SignatureException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class AuthenticationService implements AuthenticationServiceInterface {
@@ -88,12 +100,13 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
         User savedUser = this.userRepository.save(newUser);
 
-        String token = jwtService.generateToken(savedUser);
+        String token = jwtService.generateAccessToken(savedUser);
+        String refreshToken = jwtService.generateRefreshToken(savedUser);
 
         saveToken(token, savedUser);
 
         var response = AuthenticateResponse.builder().data(buildAuthUserDto(savedUser)).accessToken(token)
-                .refreshToken("")
+                .refreshToken(refreshToken)
                 .status(HttpStatus.CREATED).build();
 
         return response;
@@ -119,16 +132,54 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
         User authUser = (User) this.userRepository.findByUsername(requestBody.getUsername()).get();
 
-        String token = jwtService.generateToken(authUser);
+        String token = jwtService.generateAccessToken(authUser);
+        String refreshToken = jwtService.generateRefreshToken(authUser);
 
         saveToken(token, authUser);
 
         AuthenticateResponse response = AuthenticateResponse.builder().data(buildAuthUserDto(authUser))
                 .accessToken(token)
-                .refreshToken("")
+                .refreshToken(refreshToken)
                 .status(HttpStatus.OK).build();
 
         return response;
+    }
+
+    @Override
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response)
+            throws EntityNotFoundException, StreamWriteException, DatabindException, IOException {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String refreshToken = null;
+        String username = null;
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new EntityNotFoundException("Token not found in authentication berear header",
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            refreshToken = authHeader.substring(7);
+            username = jwtService.extractUsername(refreshToken);
+        }
+
+        if (username != null) {
+            UserDetails userDetails = userRepository.findByUsername(username).orElseThrow();
+
+            if (jwtService.validateToken(refreshToken, userDetails)) {
+                String accessToken = jwtService.generateAccessToken((User) userDetails);
+                saveToken(accessToken, (User) userDetails);
+
+                AuthenticateResponse authResponse = AuthenticateResponse.builder()
+                        .data(buildAuthUserDto((User) userDetails))
+                        .accessToken(accessToken)
+                        .refreshToken(refreshToken)
+                        .status(HttpStatus.OK).build();
+
+                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+            }
+        } else {
+            throw new EntityNotFoundException("Invalid Token: User Not Found", HttpStatus.UNAUTHORIZED);
+        }
+
     }
 
     @SuppressWarnings("null")

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.chats.chatwave.model.User;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -72,8 +73,14 @@ public class JwtService {
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+
+        try {
+            final String username = extractUsername(token);
+            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        } catch (ExpiredJwtException expiredJwtException) {
+            throw new ExpiredJwtException(expiredJwtException.getHeader(), expiredJwtException.getClaims(),
+                    "Expired JWT token");
+        }
     }
 
 }

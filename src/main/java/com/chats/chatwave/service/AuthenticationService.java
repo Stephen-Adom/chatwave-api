@@ -71,25 +71,22 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         Optional<UserDetails> usernameExist = this.userRepository.findByUsername(requestBody.getUsername());
 
         if (usernameExist.isPresent()) {
-            throw new EntityNotFoundException("Username not found " +
-                    usernameExist.get().getUsername(),
-                    HttpStatus.NOT_FOUND);
+            throw new EntityNotFoundException("Username already exist. Use a different username ",
+                    HttpStatus.BAD_REQUEST);
         }
 
         Optional<User> emailExist = this.userRepository.findByEmail(requestBody.getEmail());
 
         if (emailExist.isPresent()) {
-            throw new EntityNotFoundException("Email not found " +
-                    emailExist.get().getEmail(),
-                    HttpStatus.NOT_FOUND);
+            throw new EntityNotFoundException("Email already exist. Use a different email address ",
+                    HttpStatus.BAD_REQUEST);
         }
 
         Optional<User> phonenumberExist = this.userRepository.findByPhonenumber(requestBody.getPhonenumber());
 
         if (phonenumberExist.isPresent()) {
-            throw new EntityNotFoundException("Phonenumber not found " +
-                    phonenumberExist.get().getPhonenumber(),
-                    HttpStatus.NOT_FOUND);
+            throw new EntityNotFoundException("Phonenumber already exist. Use a different phonenumber",
+                    HttpStatus.BAD_REQUEST);
         }
 
         User newUser = User.builder().firstname(requestBody.getFirstname()).lastname(requestBody.getLastname())

@@ -85,9 +85,8 @@ public class SecurityConfiguration {
                 httpRequest -> httpRequest.requestMatchers("/api/auth/**").permitAll());
         http.sessionManagement(
                 sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        // http.authenticationProvider(authenticationProvider()).addFilterAfter(jwtSecurityFilter,
-        // UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(jwtSecurityFilter, UsernamePasswordAuthenticationFilter.class);
+        http.authenticationProvider(authenticationProvider()).addFilterAfter(jwtSecurityFilter,
+                UsernamePasswordAuthenticationFilter.class);
         http.logout(logout -> logout.logoutUrl("/api/auth/logout").addLogoutHandler(logoutService)
                 .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()));
         return http.build();

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -17,6 +18,7 @@ import com.chats.chatwave.model.ValidationError;
 @ControllerAdvice
 public class GlobalExceptionHander {
 
+    @SuppressWarnings("null")
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorMessage> handleEntityNotFoundException(EntityNotFoundException exception) {
         ErrorMessage message = new ErrorMessage();
@@ -26,6 +28,7 @@ public class GlobalExceptionHander {
         return new ResponseEntity<ErrorMessage>(message, exception.getStatus());
     }
 
+    @SuppressWarnings("null")
     @ExceptionHandler(ValidationErrorsException.class)
     public ResponseEntity<ValidationError> handleValidationError(ValidationErrorsException exception) {
         List<String> messages = new ArrayList<>();
@@ -36,6 +39,6 @@ public class GlobalExceptionHander {
         ValidationError error = ValidationError.builder().messages(messages).status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .build();
 
-        return new ResponseEntity<ValidationError>(error, HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<ValidationError>(error, exception.httpStatus());
     }
 }

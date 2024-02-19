@@ -18,8 +18,12 @@ import com.chats.chatwave.model.Token;
 import com.chats.chatwave.repository.TokenRepository;
 import com.chats.chatwave.service.JwtService;
 import com.chats.chatwave.service.UserService;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,7 +51,7 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
-        if (authHeader == null) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -64,9 +68,7 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
                 Optional<Token> tokenExist = this.tokenRepository.findByToken(token.split("\\.")[1]);
 
                 if (tokenExist.isEmpty()) {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token not found");
-                    return;
+
                 }
 
                 if (!tokenExist.get().getExpired() && !tokenExist.get().getRevoked()
@@ -77,16 +79,33 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        } catch (Exception exception) {
-            response.setHeader("error", exception.getMessage());
-            response.setStatus(401);
-            Map<String, String> error = new HashMap<>();
-            error.put("message", "Invalid Token: Token has Expired");
-            error.put("status", HttpStatus.UNAUTHORIZED.name());
-            response.setContentType("application/json");
-            new ObjectMapper().writeValue(response.getOutputStream(), error);
+        } catch (ExpiredJwtException exception) {
+            handleExceptions(exception, response);
+        } catch (SignatureException exception) {
+            handleExceptions(exception, response);
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void handleExceptions(Exception exception, HttpServletResponse response)
+            throws StreamWriteException, DatabindException, IOException {
+        response.setHeader("error", exception.getMessage());
+        response.setStatus(401);
+        Map<String, String> error = new HashMap<>();
+        error.put("message", getClientErrorMessag(exception));
+        error.put("status", HttpStatus.UNAUTHORIZED.name());
+        response.setContentType("application/json");
+        new ObjectMapper().writeValue(response.getOutputStream(), error);
+    }
+
+    private String getClientErrorMessag(Exception exception) {
+        if (exception instanceof ExpiredJwtException) {
+            return "Token has Expired";
+        } else if (exception instanceof SignatureException) {
+            return "Invalid Token: Signature is invalid";
+        }
+
+        return "Token is Invalid";
     }
 }

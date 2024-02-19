@@ -82,11 +82,7 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            System.out.println(
-                    "=============================================== global handler 0 ================================");
-
-            System.out.println(e);
-            this.handlerExceptionResolver.resolveException(request, response, GlobalExceptionHander.class, e);
+            this.handlerExceptionResolver.resolveException(request, response, null, e);
         }
 
         filterChain.doFilter(request, response);

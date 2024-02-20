@@ -73,7 +73,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Token> tokens;
 
-    @OneToMany(mappedBy = "conversation")
+    @OneToMany(mappedBy = "user")
     @Builder.Default
     private Set<UserConversation> conversations = new HashSet<>();
 

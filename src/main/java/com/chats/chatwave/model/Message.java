@@ -11,8 +11,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
@@ -25,6 +27,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(indexes = {
+        @Index(name = "FK_SENDER_ID", columnList = "sender_id"),
+        @Index(name = "FK_CONVERSATION_ID", columnList = "conversation_id"),
+        @Index(name = "FK_SENDER_CONVERSATION_ID", columnList = "sender_id, conversation_id"),
+})
 public class Message {
 
     @Id

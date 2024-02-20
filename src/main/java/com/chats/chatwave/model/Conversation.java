@@ -34,9 +34,9 @@ public class Conversation {
 
     private String lastMessage;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "conversation")
     @Builder.Default
-    private Set<User> users = new HashSet<>();
+    private Set<UserConversation> users = new HashSet<>();
 
     @OneToMany(mappedBy = "conversation")
     @Builder.Default

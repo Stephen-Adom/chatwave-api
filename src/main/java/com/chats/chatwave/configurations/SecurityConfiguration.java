@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,13 +31,10 @@ public class SecurityConfiguration {
 
     private final UserRepository userRepository;
     private final JwtSecurityFilter jwtSecurityFilter;
-    private final LogoutService logoutService;
 
-    public SecurityConfiguration(UserRepository userRepository, JwtSecurityFilter jwtSecurityFilter,
-            LogoutService logoutService) {
+    public SecurityConfiguration(UserRepository userRepository, JwtSecurityFilter jwtSecurityFilter) {
         this.userRepository = userRepository;
         this.jwtSecurityFilter = jwtSecurityFilter;
-        this.logoutService = logoutService;
     }
 
     @Bean
@@ -87,8 +83,6 @@ public class SecurityConfiguration {
                 sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authenticationProvider(authenticationProvider()).addFilterAfter(jwtSecurityFilter,
                 UsernamePasswordAuthenticationFilter.class);
-        http.logout(logout -> logout.logoutUrl("/api/auth/logout").addLogoutHandler(logoutService)
-                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()));
         return http.build();
     }
 

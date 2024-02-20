@@ -1,7 +1,9 @@
 package com.chats.chatwave.service.serviceInterface;
 
 import java.io.IOException;
+import java.util.Map;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 
 import com.chats.chatwave.Exception.EntityNotFoundException;
@@ -24,4 +26,6 @@ public interface AuthenticationServiceInterface {
 
         public void refreshToken(HttpServletRequest request, HttpServletResponse response)
                         throws EntityNotFoundException, StreamWriteException, DatabindException, IOException;
+
+        public Map<String, String> unauthenticateUser(HttpServletRequest request, HttpServletResponse response);
 }

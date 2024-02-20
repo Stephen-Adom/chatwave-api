@@ -1,7 +1,9 @@
 package com.chats.chatwave.service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
@@ -177,6 +179,40 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             throw new EntityNotFoundException("Invalid Token: User Not Found", HttpStatus.UNAUTHORIZED);
         }
 
+    }
+
+    @Override
+    public Map<String, String> unauthenticateUser(HttpServletRequest request, HttpServletResponse response) {
+        String authHeader = request.getHeader("Authorization");
+        String token = null;
+        Map<String, String> signoutResponse = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.setHeader("error", "Token not available");
+            response.setStatus(401);
+            signoutResponse.put("message", "Token not available");
+            signoutResponse.put("status", HttpStatus.BAD_REQUEST.name());
+            return signoutResponse;
+        }
+
+        token = authHeader.substring(7);
+        String tokenPayload = token.split("\\.")[1];
+        Optional<Token> storedToken = this.tokenRepository.findByToken(tokenPayload);
+
+        if (storedToken.isPresent()) {
+            Token tokenExist = storedToken.get();
+
+            tokenExist.setExpired(true);
+            tokenExist.setRevoked(true);
+            this.tokenRepository.save(tokenExist);
+
+            SecurityContextHolder.clearContext();
+
+            signoutResponse.put("message", "User sign out");
+            signoutResponse.put("status", HttpStatus.OK.name());
+        }
+
+        return signoutResponse;
     }
 
     @SuppressWarnings("null")

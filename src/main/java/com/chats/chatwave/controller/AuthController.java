@@ -1,9 +1,12 @@
 package com.chats.chatwave.controller;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,5 +58,12 @@ public class AuthController {
     public void refreshToken(HttpServletRequest request, HttpServletResponse response)
             throws StreamWriteException, DatabindException, EntityNotFoundException, IOException {
         this.authenticationService.refreshToken(request, response);
+    }
+
+    @PostMapping("logout")
+    public ResponseEntity<Map<String, String>> signOut(HttpServletRequest request, HttpServletResponse response) {
+        Map<String, String> result = this.authenticationService.unauthenticateUser(request, response);
+
+        return new ResponseEntity<Map<String, String>>(result, HttpStatus.OK);
     }
 }

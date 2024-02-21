@@ -34,14 +34,6 @@ public class Conversation {
 
     private String lastMessage;
 
-    @OneToMany(mappedBy = "conversation")
-    @Builder.Default
-    private Set<UserConversation> users = new HashSet<>();
-
-    @OneToMany(mappedBy = "conversation")
-    @Builder.Default
-    private List<Message> messages = new ArrayList<>();
-
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -49,4 +41,12 @@ public class Conversation {
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
+
+    @OneToMany(mappedBy = "conversation")
+    @Builder.Default
+    private Set<UserConversation> users = new HashSet<>();
+
+    @OneToMany(mappedBy = "conversation")
+    @Builder.Default
+    private List<Message> messages = new ArrayList<>();
 }

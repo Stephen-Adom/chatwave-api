@@ -1,0 +1,5 @@
+#all queries for  chat messages
+type Query {
+	userConversations(id: ID): [Conversation]
+	allConversations: [Conversation]
+}

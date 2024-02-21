@@ -1,0 +1,15 @@
+type User {
+	id: ID
+	firstname: String!
+	lastname: String!
+	username: String!
+	email: String!
+	phonenumber: String!
+	enabled: Boolean!
+	bio: String
+	image: String
+	createdAt: String
+	updatedAt: String
+	lastSeen: String
+	isOnline: Boolean
+}

@@ -1,0 +1,7 @@
+type Conversation {
+	id: ID!
+	lastMessage: String
+	createdAt: String!
+	updatedAt: String!
+	users: [User]
+}

@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.chats.chatwave.Exception.EntityNotFoundException;
 import com.chats.chatwave.model.Token;
 import com.chats.chatwave.repository.TokenRepository;
 import com.chats.chatwave.service.JwtService;
@@ -53,42 +54,39 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
             String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
             String token = null;
             String username = null;
+
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                filterChain.doFilter(request, response);
+                Exception exception = new EntityNotFoundException("Token Not Available", HttpStatus.UNAUTHORIZED);
+                handleExceptions(exception, response);
                 return;
             }
 
-            try {
-                if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                    token = authHeader.substring(7);
-                    username = jwtService.extractUsername(token);
-                }
-
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-                    System.out.println("====================== filter ==================");
-                    System.out.println(token);
-
-                    Token tokenExist = this.tokenRepository.findByToken(token.split("\\.")[1]).orElseThrow();
-
-                    if (!tokenExist.getExpired() && !tokenExist.getRevoked()
-                            && jwtService.validateToken(token, userDetails)) {
-                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null, userDetails.getAuthorities());
-                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                    }
-                }
-            } catch (ExpiredJwtException exception) {
-                handleExceptions(exception, response);
-            } catch (SignatureException exception) {
-                handleExceptions(exception, response);
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+                username = jwtService.extractUsername(token);
             }
 
-            filterChain.doFilter(request, response);
+            if (username != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                Token tokenExist = this.tokenRepository.findByToken(token.split("\\.")[1]).orElseThrow();
+
+                if (!tokenExist.getExpired() && !tokenExist.getRevoked()
+                        && jwtService.validateToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null, userDetails.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    Exception exception = new ExpiredJwtException(null, null, "Token is expired");
+                    handleExceptions(exception, response);
+                    return;
+                }
+            }
         }
+
         filterChain.doFilter(request, response);
     }
 
@@ -108,6 +106,8 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
             return "Token has Expired";
         } else if (exception instanceof SignatureException) {
             return "Invalid Token: Signature is invalid";
+        } else if (exception instanceof EntityNotFoundException) {
+            return exception.getMessage();
         }
 
         return "Token is Invalid";

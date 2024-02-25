@@ -1,5 +1,16 @@
 #all queries for  chat messages
+input ConversationRequest {
+	user1: ID!
+	user2: ID!
+}
+
 type Query {
-	userConversations(id: ID): [Conversation]
+	allUserConversations(id: ID): [Conversation]
+	conversationById(id: ID): Conversation
 	allConversations: [Conversation]
+}
+
+type Mutation {
+	createConversation(request: ConversationRequest): Conversation
+	# addMessageToConversation(message: String, conversationId: ID)
 }

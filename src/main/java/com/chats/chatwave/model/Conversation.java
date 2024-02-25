@@ -2,14 +2,13 @@ package com.chats.chatwave.model;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -42,9 +41,9 @@ public class Conversation {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    @OneToMany(mappedBy = "conversation")
+    @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY)
     @Builder.Default
-    private Set<UserConversation> users = new HashSet<>();
+    private List<UserConversation> users = new ArrayList<>();
 
     @OneToMany(mappedBy = "conversation")
     @Builder.Default

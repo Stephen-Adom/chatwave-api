@@ -3,5 +3,16 @@ type Conversation {
 	lastMessage: String
 	createdAt: String!
 	updatedAt: String!
-	users: [User]
+	users: [UserSummary]
+}
+
+type UserSummary {
+	id: ID
+	firstname: String!
+	lastname: String!
+	username: String!
+	email: String!
+	phonenumber: String!
+	bio: String
+	image: String
 }

@@ -47,12 +47,17 @@ public class MessageService implements MessageServiceInterface {
                                 .orElseThrow(() -> new GraphqlEntityNotFound(
                                                 "Conversation with id " + conversationId + " not found"));
 
+                conversation.setLastMessage(message);
+
                 Message newMessage = Message.builder().conversation(conversation).sender(author)
-                                .messageStatus(MessageStatus.SENT).build();
+                                .messageStatus(MessageStatus.SENT).message(message).build();
 
                 Message savedMessage = this.messageRepository.save(newMessage);
 
                 MessageDto messageDto = buildMessageDto(savedMessage);
+
+                System.out.println("============== add message to conversation ================");
+                System.out.println(messageDto.toString());
 
                 return messageDto;
         }
@@ -66,6 +71,7 @@ public class MessageService implements MessageServiceInterface {
                                 .image(message.getSender().getImage()).build();
 
                 ConversationInfo conversationInfo = ConversationInfo.builder()
+                                .id(message.getConversation().getId())
                                 .lastMessage(message.getConversation().getLastMessage())
                                 .createdAt(message.getConversation().getCreatedAt())
                                 .updatedAt(message.getConversation().getUpdatedAt())

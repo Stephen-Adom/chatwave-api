@@ -42,6 +42,8 @@ public class Message {
     @JoinColumn(name = "conversation_id", referencedColumnName = "id")
     private Conversation conversation;
 
+    private String message;
+
     @ManyToOne
     @JoinColumn(name = "sender_id", referencedColumnName = "id")
     private User sender;

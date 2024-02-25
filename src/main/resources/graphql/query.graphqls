@@ -12,5 +12,5 @@ type Query {
 
 type Mutation {
 	createConversation(request: ConversationRequest): Conversation
-	# addMessageToConversation(message: String, conversationId: ID)
+	addMessageToConversation(message: String, conversationId: ID, sender: ID): Message
 }

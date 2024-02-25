@@ -1,0 +1,6 @@
+type ConversationInfo {
+	id: ID!
+	lastMessage: String
+	createdAt: String!
+	updatedAt: String!
+}
